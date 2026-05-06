@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Deep Space Ranger – relativistic cruiser | mobile ready</title>
+  <style>
+    body {
+      margin:0; overflow:hidden; font-family:'Segoe UI','Courier New',monospace;
+      color:#ffb000; background:#000;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    #info, #status, #ui, #mobileControls { transition: opacity 0.3s; }
+    .hidden-ui { opacity: 0 !important; pointer-events: none; }
+
+    #info {
+      position:absolute; top:10px; left:10px;
+      background:rgba(0,0,0,0.4); backdrop-filter:blur(4px);
+      padding:6px 12px; border-radius:8px; border-left:3px solid #ffb000;
+      z-index:10; font-size:12px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
+      pointer-events:none;
+    }
+    #info h1 { margin:0 0 2px; font-size:1rem; letter-spacing:1px; color:#ffb000; }
+
+    #status {
+      position:absolute; bottom:90px; left:10px;
+      background:rgba(0,0,0,0.4); backdrop-filter:blur(4px);
+      padding:8px 12px; border-radius:8px; font-family:monospace; font-size:10px;
+      z-index:10; border-top:1px solid #ffb000; pointer-events:none;
+      max-width:300px;
+    }
+
+    #ui {
+      position:absolute; bottom:90px; right:10px;
+      background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
+      padding:8px; border-radius:12px; display:flex; flex-direction:column;
+      gap:4px; width:200px; z-index:20; font-size:10px;
+      border:1px solid #ffb00044;
+    }
+    @media (max-width: 700px), (pointer:coarse) {
+      #ui { display:none; }
+    }
+
+    #mobileControls {
+      position:absolute; bottom:0; left:0; right:0;
+      display:flex; flex-wrap:wrap; justify-content:center; gap:6px;
+      padding:8px 6px; background:rgba(0,0,0,0.7);
+      z-index:20; font-size:12px;
+    }
+    @media (pointer:coarse) {
+      #mobileControls button {
+        min-width:44px; min-height:44px; font-size:14px; padding:6px 10px;
+      }
+    }
+
+    button {
+      background:#1a1a00; border:1px solid #ffb000; color:#ffb000;
+      padding:4px 8px; border-radius:12px; cursor:pointer;
+      font-size:10px; font-family:inherit; transition:0.2s;
+    }
+    button:hover { background:#332200; box-shadow:0 0 4px #ffb000; }
+    button:active { background:#553300; }
+
+    select, input {
+      background:#0a0a00; border:1px solid #ffb000; color:#ffb000;
+      padding:3px; border-radius:8px; font-size:10px; font-family:monospace;
+    }
+    input { width:100%; box-sizing:border-box; }
+
+    .ui-collapsible { cursor: pointer; user-select: none; font-size:10px; margin-top:2px; }
+    .ui-collapsible::before { content: '▼ '; font-size:8px; }
+    .ui-collapsible.collapsed::before { content: '▶ '; }
+    .ui-collapsible + * { transition: opacity 0.2s; font-size:10px; }
+    .ui-collapsible.collapsed + * { opacity: 0; height:0; overflow:hidden; margin:0; padding:0; }
+
+    .star-list { max-height:80px; overflow-y:auto; font-size:9px; background:rgba(0,0,0,0.5); border-radius:8px; padding:2px 4px; margin-top:2px; }
+    .star-list div { padding:1px 0; cursor:pointer; border-bottom:1px dotted #ffb00044; }
+    .star-list div:hover { color:#fff; text-shadow:0 0 2px #ffb000; }
+
+    hr { border-color:#ffb00033; margin:3px 0; }
+
+    #etaPreview, #planetDisplay {
+      background:rgba(0,0,0,0.4); border-radius:8px; padding:4px; margin-top:2px;
+      font-size:9px; border-left:2px solid #ffb000;
+    }
+    #planetDisplay { max-height:120px; overflow-y:auto; }
+    #selectedObjectInfo {
+      background:rgba(0,0,0,0.4); border-radius:8px; padding:4px; margin-top:4px;
+      font-size:9px; border-left:2px solid #ffb000;
+    }
+
+    #tooltip {
+      position:absolute; background:rgba(0,0,0,0.8); color:#ffb000;
+      padding:4px 8px; border-radius:6px; font-size:11px; pointer-events:none;
+      z-index:30; border-left:2px solid #ffb000; display:none;
+    }
+
+    ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-track { background:#111; }
+    ::-webkit-scrollbar-thumb { background:#ffb000; }
+
+    .sys-obj { cursor:pointer; padding:1px 3px; border-radius:3px; }
+    .sys-obj:hover { background:#ffb00022; }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <h1>DEEP SPACE RANGER</h1>
+    <div>relativistic cruiser | <span id="starCount"></span> stars</div>
+    <div class="small">Touch = look | Pinch = zoom | Buttons below</div>
+  </div>
+  <div id="status">
+    <div>SHIP TIME: <span id="shipTime">---</span></div>
+    <div>EARTH TIME: <span id="earthTime">---</span></div>
+    <div>BIO AGE: <span id="bioAge">--- yrs</span></div>
+    <div>SPEED: <span id="speedDisplay">0.000000c | Accel: 0.00g</span> | WARP: <span id="timeWarpDisplay">1×</span></div>
+    <div>MODE: <span id="cruiseMode">AWAKE</span> | VIEW: <span id="viewModeDisplay">EXTERNAL</span></div>
+    <div>CURRENT STAR: <span id="currentStarName">Sol</span></div>
+  </div>
+
+  <div id="ui">
+    <div><strong>TARGET STAR</strong></div>
+    <select id="targetSelect"></select>
+    <div style="display:flex; gap:4px; align-items:center;">
+      <span style="font-size:9px;">Mode:</span>
+      <select id="travelMode" style="width:100px;">
+        <option value="brachistochrone" selected>Brachistochrone</option>
+        <option value="flyby">Flyby</option>
+      </select>
+    </div>
+    <button id="plotCourseBtn">PLOT &amp; CRUISE</button>
+    <button id="stopBtn" style="background:#331100;">STOP SHIP</button>
+    <div id="etaPreview">select a star</div>
+    <hr>
+    <div><strong>STAR SEARCH</strong></div>
+    <input type="text" id="starSearchInput" placeholder="Star name...">
+    <button id="starSearchBtn">SEARCH</button>
+    <hr>
+    <div class="ui-collapsible"><strong>NEAREST STARS</strong></div>
+    <div id="nearestList" class="star-list"></div>
+    <hr>
+    <div class="ui-collapsible"><strong>RESOURCES</strong></div>
+    <div>Metal: <span id="metalCount">100</span></div>
+    <hr>
+    <div class="ui-collapsible"><strong>ACTIONS</strong></div>
+    <div>
+      <button id="surveyBtn">SURVEY SYSTEM (10)</button>
+      <button id="mineBtn">MINE (20)</button>
+      <button id="buoyBtn">BUOY (30)</button>
+    </div>
+    <hr>
+    <div class="ui-collapsible"><strong>PLANETARY SYSTEM</strong></div>
+    <div id="planetDisplay">(no data)</div>
+    <div id="selectedObjectInfo" style="display:none;"></div>
+    <button id="planetTravelBtn" style="display:none;">TRAVEL TO PLANET</button>
+    <button id="surveyPlanetBtn" style="display:none;">SURVEY PLANET (5)</button>
+    <hr>
+    <div class="ui-collapsible"><strong>EARTH UPDATES</strong></div>
+    <div id="earthLog">(comm check required)</div>
+    <hr>
+    <div style="display: flex; gap: 4px;">
+      <button id="saveGameBtn">SAVE</button>
+      <button id="loadGameBtn">LOAD</button>
+      <button id="resetBtn">RESET</button>
+    </div>
+    <button id="fullscreenBtn">⛶ FULLSCREEN</button>
+    <button id="spectralModeBtn">HYPERSPECTRAL</button>
+    <button id="leaveSystemBtn" style="display:none;">LEAVE SYSTEM</button>
+  </div>
+
+  <div id="mobileControls">
+    <button id="mcThrust">THRUST</button>
+    <button id="mcReverse">REVERSE</button>
+    <button id="mcAutopilot">AUTO</button>
+    <button id="mcStasis">STASIS</button>
+    <button id="mcStop">STOP</button>
+    <button id="mcCockpit">COCKPIT</button>
+    <button id="mcPlanet">PLANET</button>
+    <button id="mcRecenter">CENTER</button>
+    <button id="mcSpectral">SPECTRAL</button>
+    <div style="display:flex; gap:2px;">
+      <button id="mcYawLeft"  style="font-size:16px;">◀</button>
+      <button id="mcPitchDown" style="font-size:16px;">▼</button>
+      <button id="mcPitchUp"   style="font-size:16px;">▲</button>
+      <button id="mcYawRight"  style="font-size:16px;">▶</button>
+    </div>
+  </div>
+
+  <div id="tooltip"></div>
+
+  <script src="earth_messages.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="main.js"></script>
+  <script src="stars.js"></script>
+</body>
+</html>
