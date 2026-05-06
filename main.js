@@ -491,7 +491,7 @@ const bgFragmentShader = `
   }
 `;
 
-ktx2Loader.load('gaia_milkyway_16k.ktx2', (texture) => {
+ktx2Loader.load('https://files.catbox.moe/f6h5xj.ktx2', (texture) => {
   console.log('Milky Way background loaded');
   texture.mapping = THREE.EquirectangularRefractionMapping;
   texture.anisotropy = 1;
