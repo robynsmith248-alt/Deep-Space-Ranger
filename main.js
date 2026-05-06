@@ -491,7 +491,8 @@ const bgFragmentShader = `
   }
 `;
 
-ktx2Loader.load('gaia_milkyway_16k.ktx2', (texture) => {  console.log('Milky Way background loaded');
+ktx2Loader.load('https://files.catbox.moe/gqfomr.ktx2', (texture) => {
+  console.log('Milky Way background loaded');
   texture.mapping = THREE.EquirectangularRefractionMapping;
   texture.anisotropy = 1;
   bgUniforms.tEquirect.value = texture;
@@ -779,14 +780,19 @@ function leaveSystemViewLocal() {
 }
 
 function hidePlanetButtons() {
-  document.getElementById('planetTravelBtn').style.display = 'none';
-  document.getElementById('surveyPlanetBtn').style.display = 'none';
-  document.getElementById('selectedObjectInfo').style.display = 'none';
+  const travelBtn = document.getElementById('planetTravelBtn');
+  const surveyBtn = document.getElementById('surveyPlanetBtn');
+  const infoDiv = document.getElementById('selectedObjectInfo');
+  if (travelBtn) travelBtn.style.display = 'none';
+  if (surveyBtn) surveyBtn.style.display = 'none';
+  if (infoDiv) infoDiv.style.display = 'none';
 }
 
 function showPlanetButtons() {
-  document.getElementById('planetTravelBtn').style.display = 'inline-block';
-  document.getElementById('surveyPlanetBtn').style.display = 'inline-block';
+  const travelBtn = document.getElementById('planetTravelBtn');
+  const surveyBtn = document.getElementById('surveyPlanetBtn');
+  if (travelBtn) travelBtn.style.display = 'inline-block';
+  if (surveyBtn) surveyBtn.style.display = 'inline-block';
 }
 
 // ---------- PLANET INTERACTION ----------
@@ -817,7 +823,7 @@ function surveySelectedPlanet() {
 function updateSelectedObjectInfo() {
   const infoDiv = document.getElementById('selectedObjectInfo');
   if (!selectedSystemObject) {
-    infoDiv.style.display = 'none';
+    if (infoDiv) infoDiv.style.display = 'none';
     hidePlanetButtons();
     return;
   }
@@ -832,17 +838,21 @@ function updateSelectedObjectInfo() {
       html += `Life prob: ${p.lifeProbability}% | Hab. prob: ${p.humanHabitability}%<br>`;
       html += `<span style="color:#aaa;">(survey to confirm)</span>`;
     }
-    infoDiv.innerHTML = html;
-    infoDiv.style.display = 'block';
+    if (infoDiv) {
+      infoDiv.innerHTML = html;
+      infoDiv.style.display = 'block';
+    }
     showPlanetButtons();
   } else if (ud.type === 'asteroid') {
     let html = `<strong>${ud.name}</strong><br>`;
     html += `Asteroid<br>Est. metal: ${ud.metalTons} tons`;
-    infoDiv.innerHTML = html;
-    infoDiv.style.display = 'block';
+    if (infoDiv) {
+      infoDiv.innerHTML = html;
+      infoDiv.style.display = 'block';
+    }
     hidePlanetButtons();
   } else {
-    infoDiv.style.display = 'none';
+    if (infoDiv) infoDiv.style.display = 'none';
     hidePlanetButtons();
   }
 }
@@ -1125,7 +1135,8 @@ function isTyping() {
 
 function toggleSpectralMode() {
   spectralMode = spectralMode === 'hyperspectral' ? 'visible' : 'hyperspectral';
-  document.getElementById('spectralModeBtn').innerText = spectralMode === 'hyperspectral' ? 'HYPERSPECTRAL' : 'VISIBLE ONLY';
+  const btn = document.getElementById('spectralModeBtn');
+  if (btn) btn.innerText = spectralMode === 'hyperspectral' ? 'HYPERSPECTRAL' : 'VISIBLE ONLY';
 }
 
 function resetCameraToShip() {
@@ -1344,8 +1355,10 @@ function initControls() {
   document.getElementById('stopBtn')?.addEventListener('click', stopShip);
   
   // Planet interaction buttons
-  document.getElementById('planetTravelBtn').addEventListener('click', travelToSelectedPlanet);
-  document.getElementById('surveyPlanetBtn').addEventListener('click', surveySelectedPlanet);
+  const travelBtn = document.getElementById('planetTravelBtn');
+  const surveyBtn = document.getElementById('surveyPlanetBtn');
+  if (travelBtn) travelBtn.addEventListener('click', travelToSelectedPlanet);
+  if (surveyBtn) surveyBtn.addEventListener('click', surveySelectedPlanet);
 }
 
 // ---------- UI TOGGLE ----------
